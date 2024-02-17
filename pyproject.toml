@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "py-ups-pi"
+version = "0.1.0"
+description = "Software for monitoring NUT and waking machines based on UPS battery level."
+authors = ["Jure <jure.vengust@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "py_ups_pi"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+wakeonlan = "3.1.0"
+PyNUTClient = "2.8.1.post1"
+ping3 = "4.0.4"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
