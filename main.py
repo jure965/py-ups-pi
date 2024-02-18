@@ -1,6 +1,9 @@
 import logging.config
 import argparse
 import yaml
+import asyncio
+import signal
+import functools
 
 from pathlib import Path
 from typing import Dict
@@ -14,6 +17,8 @@ with open('logging.yaml', 'rt') as f:
 
 logging.config.dictConfig(logging_config)
 logger = logging.getLogger('main')
+
+ups_data = {}
 
 
 class Host:
@@ -31,8 +36,41 @@ def decode_dict(x: Dict) -> Dict:
     return {y.decode('ascii'): x.get(y).decode('ascii') for y in x.keys()}
 
 
-def main():
-    logger.info('Starting application')
+async def ups_fetcher(nut_server, ups_name):
+    try:
+        logger.info('UPS data fetcher started')
+        while True:
+            nut_client = PyNUTClient(
+                host=nut_server['host'],
+                port=nut_server['port'],
+                login=nut_server['username'],
+                password=nut_server['password'],
+            )
+
+            ups_vars = decode_dict(nut_client.GetUPSVars(ups_name))
+
+            battery_charge = int(ups_vars["battery.charge"])
+            battery_runtime = int(ups_vars["battery.runtime"])
+            ups_status = ups_vars["ups.status"]
+
+            print(f'{battery_charge=} {battery_runtime=} {ups_status=}')
+            await asyncio.sleep(5)
+    except asyncio.CancelledError:
+        logger.info('UPS data fetcher stopped')
+
+
+async def shutdown(loop):
+    tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
+
+    for task in tasks:
+        task.cancel()
+
+    await asyncio.gather(*tasks, return_exceptions=True)
+
+    loop.stop()
+
+
+async def main():
 
     parser = argparse.ArgumentParser(
         prog='pyupspi',
@@ -61,21 +99,18 @@ def main():
         alive = is_alive(host)
         print(f'{host.name=} {host.address=} {alive=}')
 
-    nut_client = PyNUTClient(
-        host=nut_server['host'],
-        port=nut_server['port'],
-        login=nut_server['username'],
-        password=nut_server['password'],
-    )
+    loop = asyncio.get_event_loop()
 
-    ups_vars = decode_dict(nut_client.GetUPSVars(ups_name))
+    loop.add_signal_handler(signal.SIGINT, functools.partial(shutdown, loop))
 
-    battery_charge = int(ups_vars["battery.charge"])
-    battery_runtime = int(ups_vars["battery.runtime"])
-    ups_status = ups_vars["ups.status"]
-
-    print(f'{battery_charge=} {battery_runtime=} {ups_status=}')
+    try:
+        loop.create_task(ups_fetcher(nut_server, ups_name))
+        logger.info('Application started')
+        loop.run_forever()
+    finally:
+        loop.close()
+        logger.info('Application stopped')
 
 
 if __name__ == '__main__':
-    main()
+    asyncio.run(main())
