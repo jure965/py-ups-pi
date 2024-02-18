@@ -1,8 +1,9 @@
 class WakeConfig:
-    def __init__(self, charge: int, runtime: int, status: str):
+    def __init__(self, charge: int, runtime: int, status: str, delay: int):
         self.charge = charge
         self.runtime = runtime
         self.status = status
+        self.delay = delay
 
 
 class UPSStatus:

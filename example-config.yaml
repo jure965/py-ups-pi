@@ -12,3 +12,4 @@ wake_on:
   charge: 30
   runtime: 360
   status: 'OL'
+  delay: 60
