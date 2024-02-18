@@ -6,7 +6,6 @@ from PyNUTClient.PyNUT import PyNUTClient
 
 from classes import UPSStatus
 
-
 logger = logging.getLogger("ups_monitor")
 
 
@@ -26,12 +25,13 @@ async def ups_monitor(nut_server: Dict, ups_name: str, ups_status: UPSStatus):
         while True:
             ups_vars = decode_dict(nut_client.GetUPSVars(ups_name))
 
-            ups_status.battery_charge = int(ups_vars["battery.charge"])
-            ups_status.battery_runtime = int(ups_vars["battery.runtime"])
-            ups_status.ups_status_str = ups_vars["ups.status"]
+            ups_status.charge = int(ups_vars["battery.charge"])
+            ups_status.runtime = int(ups_vars["battery.runtime"])
+            ups_status.status = ups_vars["ups.status"]
 
             logger.info(f'UPS status fetched {ups_name=}')
 
             await asyncio.sleep(5)
+
     except asyncio.CancelledError:
         logger.info(f'UPS monitor stopped {ups_name=}')

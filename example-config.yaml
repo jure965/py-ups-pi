@@ -9,6 +9,6 @@ nut_server:
   password: 'password'
 ups_name: 'myUPS'
 wake_on:
-  batt_level_gte: 30
-  runtime_gte: 360
-  ups_status_str: 'OL'
+  charge: 30
+  runtime: 360
+  status: 'OL'

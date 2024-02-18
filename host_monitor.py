@@ -6,7 +6,6 @@ from ping3 import ping
 
 from classes import Host, WakeConfig, UPSStatus
 
-
 logger = logging.getLogger("host_monitor")
 
 
@@ -20,13 +19,13 @@ async def host_monitor(host: Host, wake_config: WakeConfig, ups_status: UPSStatu
         while True:
             await asyncio.sleep(5)
 
-            if ups_status.ups_status_str == "UNKNOWN":
-                logger.info(f'UPS status {ups_status.ups_status_str}')
+            if ups_status.status == "UNKNOWN":
+                logger.info(f'UPS status {ups_status.status}')
                 continue
 
-            if ups_status.ups_status_str == wake_config.ups_status_str \
-                    and ups_status.battery_charge >= wake_config.batt_level_gte \
-                    and ups_status.battery_runtime >= wake_config.runtime_gte:
+            if ups_status.status == wake_config.status \
+                    and ups_status.charge >= wake_config.charge \
+                    and ups_status.runtime >= wake_config.runtime:
                 if not is_alive(host):
                     wakeonlan.send_magic_packet(host.mac)
                     logger.info(f'Sent magic packet {host.name=}')
