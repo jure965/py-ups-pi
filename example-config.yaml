@@ -1,5 +1,5 @@
 hosts:
-  server:
+  - name: 'server'
     mac: 'AA:BB:CC:DD:EE:FF'
     address: '192.168.1.1'
 nut_server:
@@ -11,4 +11,4 @@ ups_name: 'myUPS'
 wake_on:
   batt_level_gte: 30
   runtime_gte: 360
-  ups_status: 'OL'
+  ups_status_str: 'OL'
